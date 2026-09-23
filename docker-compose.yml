@@ -1,0 +1,41 @@
+services:
+  postgres:
+    image: postgres:16
+    container_name: idrd-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+
+  backend:
+    build:
+      context: ../idrd-materiales-backend
+      dockerfile: Dockerfile
+    container_name: idrd-backend
+    restart: unless-stopped
+    environment:
+      DATABASE_URL: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}?schema=public
+      PORT: 3000
+    depends_on:
+      - postgres
+    ports:
+      - "3000:3000"
+
+  frontend:
+    build:
+      context: ../idrd-materiales-frontend
+      dockerfile: Dockerfile
+    container_name: idrd-frontend
+    restart: unless-stopped
+    depends_on:
+      - backend
+    ports:
+      - "80:80"
+
+volumes:
+  postgres_data:
