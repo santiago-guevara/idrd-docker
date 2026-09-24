@@ -1,4 +1,5 @@
 services:
+  # Base de datos Postgre SQL
   postgres:
     image: postgres:16
     container_name: idrd-postgres
@@ -8,13 +9,14 @@ services:
       POSTGRES_USER: ${POSTGRES_USER}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
     volumes:
-      - postgres_data:/var/lib/postgresql/data
+      - postgres_data:/var/lib/postgresql/data # Mantiene la información guardada si el contenedor se apaga
     ports:
       - "5432:5432"
 
+  # API Backend
   backend:
     build:
-      context: ../idrd-materiales-backend
+      context: ../idrd-materiales-backend #Ruta del frontend
       dockerfile: Dockerfile
     container_name: idrd-backend
     restart: unless-stopped
@@ -22,10 +24,11 @@ services:
       DATABASE_URL: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}?schema=public
       PORT: 3000
     depends_on:
-      - postgres
+      - postgres # Se ejecuta solo después de iniciar la base de datos
     ports:
       - "3000:3000"
-
+  
+  # Frontend Angular
   frontend:
     build:
       context: ../idrd-materiales-frontend
@@ -38,4 +41,4 @@ services:
       - "80:80"
 
 volumes:
-  postgres_data:
+  postgres_data: # Almacenamiento persistente para la BD
